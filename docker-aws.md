@@ -30,6 +30,8 @@ Follow steps 1 and 2.1 of [docker-machine with aws example](https://docs.docker.
 
 ### Create Docker Machine
 
+Create docker machine instance on AWS:
+
 ```
 # spin up an m4.large instance in us-west Oregon
 # specify engine-install-url because docker for mac still doesn't have bugfix 
@@ -44,9 +46,34 @@ docker-machine create \
   aws-notebook
 ```
 
+Set new machine as default:
+
+`eval $(docker-machine env aws-notebook`
+
 Confirm machine is up and running:
 
 `docker-machine ls`
+
+Get machine IP:
+
+`docker-machine ip aws-notebook`
+
+Ensure docker is running container on aws machine:
+
+```
+# Port 8888 is open to inbound connections by the driver, to view/edit
+# go to 'docker-machine' security group in AWS
+docker run -d -p 8888:80 --name webserver kitematic/hello-world-nginx
+```
+
+Point browser to: https://<machine ip>:8888. Page should say 'Voilà! Your nginx container is running!'
+
+Shut down/halt container:
+
+```
+docker stop webserver
+docker rm webserver
+```
 
 Since we aren't going to use the machine immediately, stop the instance:
 
