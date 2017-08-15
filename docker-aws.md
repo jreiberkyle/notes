@@ -1,11 +1,11 @@
-# Running docker on AWS
+# Parameter Tuning with Jupyter Notebook on AWS using Docker
 
 ## Scenario
 
-I have a docker container that I am running locally but I want to run it on AWS because of compute limitations locally. This container runs an application that performs Cross-Validation to determine the best number of neighbors, k, in a KNN Classifier. The training data is saved as `xy_files.npz` and cross-validation is performed using the `scikit-learn` library.
+I have a docker container that I am running locally but I want to run it on AWS because of compute limitations. This container runs an application that performs Cross-Validation to determine the best number of neighbors, k, in a KNN Classifier. The training data is saved as `xy_files.npz` and cross-validation is performed using the `scikit-learn` library.
 
 I care about matching my local compute power and keeping costs down. 
-My local docker machine has 8Gb memory and I am using 1 CPU. I plan to start the docker-machine instance, upload data,
+My local docker machine has 8Gb memory and I am using 1 CPU with 4 cores. I plan to start the docker-machine instance, upload data,
 run the computation, view/download results, and stop the instance. 
 
 ## Plan
