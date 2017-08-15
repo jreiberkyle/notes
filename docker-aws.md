@@ -79,6 +79,17 @@ Since we aren't going to use the machine immediately, stop the instance:
 
 `docker-machine stop aws-notebook`
 
+### Create AWS CloudWatch Alarm
+
+Since we don't want the docker-machine instance to continue running once it has finished processing
+(or if we forget to shut it down), we will create a CloudWatch alarm that will shut it down automatically
+after the CPU utilization has been below a threshold for a reasonable duration. The duration should be short
+enough to minimize unnecessary cost due to an inactive, running instance but long enough to minimize cost due
+to multiple start/stop cycles and the AWS minimum charge unit, 1 hour. I chose a CPU utilization of less than 5% for 45 minutes.
+
+The docker-machine instance can be found in the [US West 2 ec2 console](https://us-west-2.console.aws.amazon.com/ec2/v2/home?region=us-west-2#Instances:sort=instanceId). Select the instance, bring the 'Monitoring' tab to the front, then click the 'Create Alarm' button. In the created alarm, make sure the 'Stop this instance' action is selected and set the case to 'Average' of 'CPU Utilization' is: '<=' '5' Percent (be sure to select 'less than', not 'greater than', which is the default) For at least '3' consecutive periods of '15 Minutes'. 
+
+
 ### Run Container
 
 NOTE: the docker image for this container needs ipython notebook and the
