@@ -87,15 +87,24 @@ after the CPU utilization has been below a threshold for a reasonable duration. 
 enough to minimize unnecessary cost due to an inactive, running instance but long enough to minimize cost due
 to multiple start/stop cycles and the AWS minimum charge unit, 1 hour. I chose a CPU utilization of less than 5% for 45 minutes.
 
-The docker-machine instance can be found in the [US West 2 ec2 console](https://us-west-2.console.aws.amazon.com/ec2/v2/home?region=us-west-2#Instances:sort=instanceId). Select the instance, bring the 'Monitoring' tab to the front, then click the 'Create Alarm' button. In the created alarm, make sure the 'Stop this instance' action is selected and set the case to 'Average' of 'CPU Utilization' is: '<=' '5' Percent (be sure to select 'less than', not 'greater than', which is the default) For at least '3' consecutive periods of '15 Minutes'. 
+The docker-machine instance can be found in the [US West 2 ec2 console](https://us-west-2.console.aws.amazon.com/ec2/v2/home?region=us-west-2#Instances:sort=instanceId). Select the instance, bring the 'Monitoring' tab to the front, then click the 'Create Alarm' button. In the created alarm, make sure the 'Stop this instance' action is selected and set the case to 'Average' of 'CPU Utilization' is: '<=' '5' Percent (be sure to select 'less than', not 'greater than', which is the default) For at least '9' consecutive periods of '5 Minutes'. Be sure to treat missing data as 'good' so the alarm won't keep on
+shutting down the notebook if you just start it up and don't ramp up a process immediately (or at least you will have 45 minutes before this happens).
 
 
 ### Run Container
 
-NOTE: the docker image for this container needs ipython notebook and the
+NOTES:
+- The docker image for this container needs ipython notebook and the
 `numpy` and `scikit-learn` python libraries. This is provided out-of-the box
 in the jupyter/scipy-notebook image. Therefore, we do not need to build our own
 image.
+- This application only uses one CPU core, while more are available in the instance.
+This is because I kept on running into errors when attempting to enable multiprocessing.
+Ipython notebook and the `multiprocessing` library (used by `joblib`, which handles
+parallel processing in scikit-learn) are not compatible and this results in the process hanging.
+When I ran the process as a script on the command-line, I got a memory error.
+To enable `joblib` multiprocessing in docker, add `-e JOBLIB_TEMP_FOLDER="/home/jovyan/work/tmp"`
+to the `docker run` command.
 
 Workflow:
 
@@ -125,12 +134,10 @@ Points:
 security group, 8888 (is this necessary since they are the same port?)
 - share the docker machine home folder as a volume inside the docker container to allow access to the data and
 save notebook
-- set the joblib temp folder inside the container to the shared volume to enable multiprocessing
 
 ```
-docker run -it -p 8888:8888  \
+docker run -it --rm -p 8888:8888  \
   -v /home/ubuntu:/home/jovyan/work \
-  -e JOBLIB_TEMP_FOLDER=/home/jovyan/work/tmp \
   --name aws-py \
   jupyter/scipy-notebook
 ```
@@ -160,12 +167,12 @@ datafile = os.path.join('xy_file.npz')
 X, y = load_cross_val_data(datafile)
 
 # Tune parameters
-tuned_parameters = {'n_neighbors': range(15,105,30)}
+tuned_parameters = {'n_neighbors': range(15,95,10)}
 
 clf = GridSearchCV(KNN(n_neighbors=15),
                    tuned_parameters,
                    cv=5,
-                   verbose=10, n_jobs=5)
+                   verbose=10)
 clf.fit(X, y)
 
 print("Best parameters set found on development set:\n")
@@ -181,19 +188,17 @@ for mean, std, params in zip(means, stds, res_params):
           % (mean, std * 2, params))
 ```
 
-Running this noebook should result in output:
+Running this notebook should result in output:
 
 ```
-Fitting 5 folds for each of 3 candidates, totalling 15 fits
-[CV] n_neighbors=15 ..................................................
-[CV] n_neighbors=15 ..................................................
-[CV] n_neighbors=15 ..................................................
-[CV] n_neighbors=15 ..................................................
+Fitting 5 folds for each of 8 candidates, totalling 40 fits
 [CV] n_neighbors=15 ..................................................
 ...
 ```
 
+Now go grab a cup of coffee, read a book, start a painting, and let the notebook run and keep producing output. Eventually, it will tell you the best k value for this data and estimator, then it will shut down after 45 minutes of inactivity. When you come back, if it has shut down, the kernel will be disconnected but the output will still be there for you to read.
 
-1. Stop Machine
+#### Stop Machine
 
+If you set up the CloudWatch alarm automatically, the machine will be stopped after 45 minutes of inactivity.
 To stop the machine manually, in the container terminal, enter `control-C` twice. This will return you to the local terminal. Then type `docker-machine stop aws-notebook`
