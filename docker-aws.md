@@ -2,7 +2,7 @@
 
 ## Scenario
 
-I have a docker container that I am running locally but I want to run it on AWS because of compute limitations locally.
+I have a docker container that I am running locally but I want to run it on AWS because of compute limitations locally. This container runs an application that performs Cross-Validation to determine the best number of neighbors, k, in a KNN Classifier. The training data is saved as `xy_files.npz` and cross-validation is performed using the `scikit-learn` library.
 
 I care about matching my local compute power and keeping costs down. 
 My local docker machine has 8Gb memory and I am using 1 CPU. I plan to start the docker-machine instance, upload data,
@@ -82,8 +82,30 @@ Since we aren't going to use the machine immediately, stop the instance:
 ### Run Container
 
 Workflow:
-1. Start Machine
-2. Upload data
-3. Run container
-4. View result
-5. Stop Machine
+1. Start Machine and get IP
+```
+docker-machine start aws-notebook
+# Because the instance will have a new IP, regenerate certs
+docker-machine regenerate-certs aws-notebook
+eval $(docker-machine env aws-notebook)
+docker-machine ip aws-notebook
+```
+1. Upload data (use [docker-machine scp](https://docs.docker.com/machine/reference/scp/))
+
+1. Build image
+The docker image needs `numpy` and `scikit-learn` and needs to add the cross-val directory.
+
+`Dockerfile.crossval`:
+```
+# Cross-validation only requires numpy and scikit-learn,
+# both of which are installed in the base image 
+FROM jupyter/scipy-notebook
+```
+
+```
+docker build -f Dockerfile.crossval -t crossval .
+```
+
+1. Run container
+1. View result
+1. Stop Machine
