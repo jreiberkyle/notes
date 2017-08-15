@@ -86,12 +86,14 @@ Workflow:
 ```
 docker-machine start aws-notebook
 # Because the instance will have a new IP, regenerate certs
-docker-machine regenerate-certs aws-notebook
+docker-machine regenerate-certs -f aws-notebook
 eval $(docker-machine env aws-notebook)
 docker-machine ip aws-notebook
 ```
 1. Upload data (use [docker-machine scp](https://docs.docker.com/machine/reference/scp/))
-
+```
+docker-machine scp data/knn_cross_val/xy_file.npz aws-notebook:/home/ubuntu/xy_file.npz
+```
 1. Build image
 The docker image needs `numpy` and `scikit-learn` and needs to add the cross-val directory.
 
