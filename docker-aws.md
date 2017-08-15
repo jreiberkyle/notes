@@ -81,6 +81,11 @@ Since we aren't going to use the machine immediately, stop the instance:
 
 ### Run Container
 
+NOTE: the docker image for this container needs ipython notebook and the
+`numpy` and `scikit-learn` python libraries. This is provided out-of-the box
+in the jupyter/scipy-notebook image. Therefore, we do not need to build our own
+image.
+
 Workflow:
 1. Start Machine and get IP
 ```
@@ -93,19 +98,6 @@ docker-machine ip aws-notebook
 1. Upload data (use [docker-machine scp](https://docs.docker.com/machine/reference/scp/))
 ```
 docker-machine scp data/knn_cross_val/xy_file.npz aws-notebook:/home/ubuntu/xy_file.npz
-```
-1. Build image
-The docker image needs `numpy` and `scikit-learn` and needs to add the cross-val directory.
-
-`Dockerfile.crossval`:
-```
-# Cross-validation only requires numpy and scikit-learn,
-# both of which are installed in the base image 
-FROM jupyter/scipy-notebook
-```
-
-```
-docker build -f Dockerfile.crossval -t crossval .
 ```
 
 1. Run container
