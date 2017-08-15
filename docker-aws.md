@@ -109,5 +109,8 @@ docker build -f Dockerfile.crossval -t crossval .
 ```
 
 1. Run container
+```
+docker run -it -p 8888:8888  -v /home/ubuntu:/home/jovyan/work --name aws-py jupyter/scipy-notebook
+```
 1. View result
 1. Stop Machine
