@@ -98,7 +98,9 @@ in the jupyter/scipy-notebook image. Therefore, we do not need to build our own
 image.
 
 Workflow:
-1. Start Machine and get IP
+
+#### Start Machine and get IP
+
 ```
 docker-machine start aws-notebook
 # Because the instance will have a new IP, regenerate certs
@@ -106,12 +108,16 @@ docker-machine regenerate-certs -f aws-notebook
 eval $(docker-machine env aws-notebook)
 docker-machine ip aws-notebook
 ```
-1. Upload data (use [docker-machine scp](https://docs.docker.com/machine/reference/scp/))
+    
+#### Upload data
+
+(use [docker-machine scp](https://docs.docker.com/machine/reference/scp/))
+
 ```
 docker-machine scp data/knn_cross_val/xy_file.npz aws-notebook:/home/ubuntu/xy_file.npz
 ```
 
-1. Run container
+#### Run container
 
 Points:
 - run the  container interactively so we can copy the secret token
@@ -128,7 +134,8 @@ docker run -it -p 8888:8888  \
   --name aws-py \
   jupyter/scipy-notebook
 ```
-1. Run notebook
+
+#### Run notebook
 
 To access the notebook server, point browser to: `<docker machine ip>:8888/?token=<token copied from container terminal>`
 
