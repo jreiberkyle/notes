@@ -109,8 +109,81 @@ docker build -f Dockerfile.crossval -t crossval .
 ```
 
 1. Run container
+
+Points:
+- run the  container interactively so we can copy the secret token
+- forward the ipython notebook port, 8888, to the port opened on the instance as a part of `docker-machine`
+security group, 8888 (is this necessary since they are the same port?)
+- share the docker machine home folder as a volume inside the docker container to allow access to the data and
+save notebook
+- set the joblib temp folder inside the container to the shared volume to enable multiprocessing
+
 ```
-docker run -it -p 8888:8888  -v /home/ubuntu:/home/jovyan/work --name aws-py jupyter/scipy-notebook
+docker run -it -p 8888:8888  \
+  -v /home/ubuntu:/home/jovyan/work \
+  -e JOBLIB_TEMP_FOLDER=/home/jovyan/work/tmp \
+  --name aws-py \
+  jupyter/scipy-notebook
 ```
-1. View result
+1. Run notebook
+
+To access the notebook server, point browser to: `<docker machine ip>:8888/?token=<token copied from container terminal>`
+
+In `work` folder, create a new notebook and add the following:
+
+```
+import os
+
+import numpy as np
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import classification_report
+from sklearn.neighbors import KNeighborsClassifier as KNN
+
+# Load data
+def load_cross_val_data(datafile):
+    npzfile = np.load(datafile)
+    X = npzfile['X']
+    y = npzfile['y']
+    return X,y
+
+datafile = os.path.join('xy_file.npz')
+X, y = load_cross_val_data(datafile)
+
+# Tune parameters
+tuned_parameters = {'n_neighbors': range(15,105,30)}
+
+clf = GridSearchCV(KNN(n_neighbors=15),
+                   tuned_parameters,
+                   cv=5,
+                   verbose=10, n_jobs=5)
+clf.fit(X, y)
+
+print("Best parameters set found on development set:\n")
+print(clf.best_params_)
+
+print("Grid scores on development set:\n")
+
+means = clf.cv_results_['mean_test_score']
+stds = clf.cv_results_['std_test_score']
+res_params = clf.cv_results_['params']
+for mean, std, params in zip(means, stds, res_params):
+    print("%0.3f (+/-%0.03f) for %r"
+          % (mean, std * 2, params))
+```
+
+Running this noebook should result in output:
+
+```
+Fitting 5 folds for each of 3 candidates, totalling 15 fits
+[CV] n_neighbors=15 ..................................................
+[CV] n_neighbors=15 ..................................................
+[CV] n_neighbors=15 ..................................................
+[CV] n_neighbors=15 ..................................................
+[CV] n_neighbors=15 ..................................................
+...
+```
+
+
 1. Stop Machine
+
+To stop the machine manually, in the container terminal, enter `control-C` twice. This will return you to the local terminal. Then type `docker-machine stop aws-notebook`
