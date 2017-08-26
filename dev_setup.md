@@ -9,5 +9,19 @@ Install directions in this [blog post](https://jakoblaegdsmand.com/en/blog/how-t
 
 ## Editor
 
-MacVim with [pathogen](https://github.com/tpope/vim-pathogen) package manager and [solarized](https://github.com/altercation/vim-colors-solarized) color scheme.
+MacVim installed using homebrew and overriding system vim
+
+```
+brew install macvim --with-override-system-vim
+```
+note that this requires Xcode to be installed (achieved by starting the XCode application)
+
+error code if XCode isn't installed:
+ ```
+ xcode-select: error: tool 'xcodebuild' requires Xcode, but active developer directory '/Library/Developer/CommandLineTools' is a command line tools instance
+ ```
+
+[pathogen](https://github.com/tpope/vim-pathogen) as package manager.
+
+[solarized](https://github.com/altercation/vim-colors-solarized) color scheme.
 
