@@ -14,12 +14,15 @@ MacVim installed using homebrew and overriding system vim
 ```
 brew install macvim --with-override-system-vim
 ```
-note that this requires Xcode to be installed (achieved by starting the XCode application)
 
-error code if XCode isn't installed:
+If you are getting this error:
+
  ```
  xcode-select: error: tool 'xcodebuild' requires Xcode, but active developer directory '/Library/Developer/CommandLineTools' is a command line tools instance
  ```
+ 
+First install and open XCode. If the problem persists, try setting the command-line interface location as shown in this stack overflow [question](https://stackoverflow.com/questions/17980759/xcode-select-active-developer-directory-error/17980786)
+ 
 
 [pathogen](https://github.com/tpope/vim-pathogen) as package manager.
 
